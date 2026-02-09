@@ -1,3 +1,6 @@
+import AntDesign from "@expo/vector-icons/AntDesign";
+import Entypo from "@expo/vector-icons/Entypo";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { Image } from "expo-image";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useState } from "react";
@@ -11,6 +14,7 @@ import {
   Text,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 type productsType = {
   id: number;
@@ -50,17 +54,17 @@ export default function old_Index() {
   };
   if (!products) {
     return (
-      <>
+      <SafeAreaView>
         <StatusBar style="dark" />
         <View style={styles.loading}>
           <Text style={styles.loadingText}>Loading</Text>
           <ActivityIndicator size={"large"} color={"red"} />
         </View>
-      </>
+      </SafeAreaView>
     );
   }
   return (
-    <>
+    <SafeAreaView>
       <StatusBar style="dark" />
       <FlatList
         contentContainerStyle={styles.container}
@@ -89,9 +93,10 @@ export default function old_Index() {
                   ]}
                 >
                   <Text style={styles.cart}>
-                    <Image
-                      source={require("../assets/images/compare.png")}
-                      style={styles.compareImg}
+                    <Ionicons
+                      name="git-compare-outline"
+                      size={24}
+                      color="black"
                     />
                   </Text>
                 </Pressable>
@@ -105,10 +110,7 @@ export default function old_Index() {
                   ]}
                 >
                   <Text style={styles.cart}>
-                    <Image
-                      source={require("../assets/images/heart.png")}
-                      style={styles.compareImg}
-                    />
+                    <Entypo name="heart-outlined" size={24} color="black" />
                   </Text>
                 </Pressable>
               </View>
@@ -131,10 +133,7 @@ export default function old_Index() {
                 ]}
               >
                 <Text style={styles.cart}>
-                  <Image
-                    source={require("../assets/images/cart.png")}
-                    style={{ width: 24, height: 24 }}
-                  />
+                  <AntDesign name="shopping-cart" size={24} color="black" />
                 </Text>
               </Pressable>
               <Pressable
@@ -163,7 +162,7 @@ export default function old_Index() {
           </View>
         </Pressable>
       </Modal>
-    </>
+    </SafeAreaView>
   );
 }
 const styles = StyleSheet.create({
