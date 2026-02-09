@@ -3,8 +3,10 @@ import { StatusBar } from "expo-status-bar";
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
+  FlatList,
+  Modal,
   Pressable,
-  ScrollView,
+  RefreshControl,
   StyleSheet,
   Text,
   View,
@@ -25,6 +27,8 @@ type productsType = {
 
 export default function old_Index() {
   const [products, setProducts] = useState<productsType[] | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
   const fetchProducts = async () => {
     try {
       const res = await fetch("https://fakestoreapi.com/products");
@@ -37,47 +41,145 @@ export default function old_Index() {
   useEffect(() => {
     fetchProducts();
   }, []);
+  const onRefresh = () => {
+    setRefreshing(true);
+    fetchProducts();
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 1000);
+  };
   if (!products) {
     return (
-      <View>
-        <Text>Loading...</Text>
-        <ActivityIndicator size={"small"} color={"red"} />
-      </View>
+      <>
+        <StatusBar style="dark" />
+        <View style={styles.loading}>
+          <Text style={styles.loadingText}>Loading</Text>
+          <ActivityIndicator size={"large"} color={"red"} />
+        </View>
+      </>
     );
   }
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <>
       <StatusBar style="dark" />
-      {products.map((item) => (
-        <View key={item.id} style={styles.itemWrapper}>
-          <Image
-            style={styles.image}
-            source={item.image}
-            contentFit="contain"
-            transition={1000}
-          />
-          <Text style={styles.title} numberOfLines={2}>
-            {item.title}
-          </Text>
-          <Text style={styles.price} numberOfLines={4}>
-            ${item.price}
-          </Text>
-          <View style={styles.btnContainer}>
-            <Pressable style={styles.cartBtn}>
-              <Text style={styles.cart}>🛒</Text>
-            </Pressable>
-            <Pressable style={styles.buyBtn}>
-              <Text style={styles.buy}>ყიდვა</Text>
-            </Pressable>
+      <FlatList
+        contentContainerStyle={styles.container}
+        data={products}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+        initialNumToRender={3}
+        renderItem={({ item }) => (
+          <View key={item.id} style={styles.itemWrapper}>
+            <View>
+              <Image
+                style={styles.image}
+                source={item.image}
+                contentFit="contain"
+                transition={1000}
+              />
+              <View style={styles.btnWrapper}>
+                <Pressable
+                  onPress={() => {
+                    console.log("pressed");
+                  }}
+                  style={({ pressed }) => [
+                    styles.compareBtn,
+                    pressed && styles.cartBtnPressed,
+                  ]}
+                >
+                  <Text style={styles.cart}>
+                    <Image
+                      source={require("../assets/images/compare.png")}
+                      style={styles.compareImg}
+                    />
+                  </Text>
+                </Pressable>
+                <Pressable
+                  onPress={() => {
+                    console.log("pressed");
+                  }}
+                  style={({ pressed }) => [
+                    styles.cartBtn,
+                    pressed && styles.cartBtnPressed,
+                  ]}
+                >
+                  <Text style={styles.cart}>
+                    <Image
+                      source={require("../assets/images/heart.png")}
+                      style={styles.compareImg}
+                    />
+                  </Text>
+                </Pressable>
+              </View>
+              <Image source={"../assets/images/cart.svg"} />
+            </View>
+            <Text style={styles.title} numberOfLines={2}>
+              {item.title}
+            </Text>
+            <Text style={styles.price} numberOfLines={4}>
+              ${item.price}
+            </Text>
+            <View style={styles.btnContainer}>
+              <Pressable
+                onPress={() => {
+                  console.log("pressed");
+                }}
+                style={({ pressed }) => [
+                  styles.cartBtn,
+                  pressed && styles.cartBtnPressed,
+                ]}
+              >
+                <Text style={styles.cart}>
+                  <Image
+                    source={require("../assets/images/cart.png")}
+                    style={{ width: 24, height: 24 }}
+                  />
+                </Text>
+              </Pressable>
+              <Pressable
+                onPress={() => {
+                  console.log("pressed");
+                  setModalVisible(!modalVisible);
+                }}
+                style={({ pressed }) => [
+                  styles.buyBtn,
+                  pressed && styles.cartBtnPressed,
+                ]}
+              >
+                <Text style={styles.buy}>ყიდვა</Text>
+              </Pressable>
+            </View>
           </View>
-        </View>
-      ))}
-    </ScrollView>
+        )}
+      ></FlatList>
+      <Modal visible={modalVisible} transparent animationType="fade">
+        <Pressable
+          onPress={() => setModalVisible(false)}
+          style={styles.modalOverlay}
+        >
+          <View style={styles.modalContent}>
+            <Text>Modal content</Text>
+          </View>
+        </Pressable>
+      </Modal>
+    </>
   );
 }
 const styles = StyleSheet.create({
+  loading: {
+    flex: 1,
+    alignItems: "center",
+    gap: 10,
+    justifyContent: "center",
+  },
+  loadingText: {
+    fontSize: 18,
+    fontWeight: 500,
+  },
   container: {
     backgroundColor: "#ffff",
+    paddingBottom: 30,
   },
   title: {
     fontWeight: 700,
@@ -91,6 +193,8 @@ const styles = StyleSheet.create({
     marginVertical: 20,
     borderRadius: 22,
     padding: 18,
+    position: "relative",
+    backgroundColor: "#faf8f872",
   },
   image: {
     height: 140,
@@ -108,13 +212,20 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   cartBtn: {
-    borderWidth: 1,
-    borderColor: "#ccc",
     width: 50,
     height: 50,
     borderRadius: 30,
     justifyContent: "center",
     alignItems: "center",
+    backgroundColor: "#fff",
+
+    shadowColor: "#ccc",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.6,
+    shadowRadius: 4,
+
+    // Android shadow
+    elevation: 4,
   },
   cart: {
     fontSize: 20,
@@ -139,5 +250,53 @@ const styles = StyleSheet.create({
   buy: {
     fontWeight: 700,
     color: "#ffff",
+  },
+  btnWrapper: {
+    position: "absolute",
+    right: 0,
+    top: 0,
+    flexDirection: "column",
+    gap: 10,
+  },
+  compareBtn: {
+    width: 50,
+    height: 50,
+    borderRadius: 30,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#fff",
+
+    shadowColor: "#ccc",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.6,
+    shadowRadius: 4,
+
+    // Android shadow
+    elevation: 10,
+  },
+  compareImg: {
+    width: 24,
+    height: 24,
+  },
+  cartBtnPressed: {
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.6,
+    shadowRadius: 2,
+    elevation: 1,
+    transform: [{ scale: 0.95 }],
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.4)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  modalContent: {
+    width: "50%",
+    height: "30%",
+    backgroundColor: "#ffff",
+    borderRadius: 30,
+    alignItems: "center",
+    justifyContent: "center",
   },
 });
